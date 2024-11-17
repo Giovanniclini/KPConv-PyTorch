@@ -7,11 +7,11 @@
 #
 # ----------------------------------------------------------------------------------------------------------------------
 #
-#      Callable script to start a training on SensatUrban dataset
+#      Callable script to start a training on WasteSeg dataset
 #
 # ----------------------------------------------------------------------------------------------------------------------
 #
-#      Bene Köhler - 07/05/2024
+#      Giovanni Clini - 18/11/2024
 #
 
 
@@ -275,19 +275,19 @@ if __name__ == "__main__":
         config.saving_path = sys.argv[1]
 
     # Initialize datasets
-    training_dataset = SensatUrbanDataset(config, set="training", use_potentials=True)
-    test_dataset = SensatUrbanDataset(config, set="validation", use_potentials=True)
+    training_dataset = WasteSegDataset(config, set="training", use_potentials=True)
+    test_dataset = WasteSegDataset(config, set="validation", use_potentials=True)
 
     # Initialize samplers
-    training_sampler = SensatUrbanSampler(training_dataset)
-    test_sampler = SensatUrbanSampler(test_dataset)
+    training_sampler = WasteSegSampler(training_dataset)
+    test_sampler = WasteSegSampler(test_dataset)
 
     # Initialize the dataloader
     training_loader = DataLoader(
         training_dataset,
         batch_size=1,
         sampler=training_sampler,
-        collate_fn=SensatUrbanCollate,
+        collate_fn=WasteSegCollate,
         num_workers=config.input_threads,
         pin_memory=True,
     )
@@ -295,7 +295,7 @@ if __name__ == "__main__":
         test_dataset,
         batch_size=1,
         sampler=test_sampler,
-        collate_fn=SensatUrbanCollate,
+        collate_fn=WasteSegCollate,
         num_workers=config.input_threads,
         pin_memory=True,
     )
