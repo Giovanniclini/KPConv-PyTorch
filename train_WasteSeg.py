@@ -26,7 +26,7 @@ import signal
 import os
 
 # Dataset
-from datasets.SensatUrban import *
+from datasets.WasteSeg import *
 from torch.utils.data import DataLoader
 
 from utils.config import Config

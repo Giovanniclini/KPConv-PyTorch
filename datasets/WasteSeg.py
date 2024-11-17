@@ -7,12 +7,12 @@
 #
 # ----------------------------------------------------------------------------------------------------------------------
 #
-#      Class handling SensatUrban dataset.
+#      Class handling WasteSeg dataset.
 #      Implements a Dataset, a Sampler, and a collate_fn
 #
 # ----------------------------------------------------------------------------------------------------------------------
 #
-#      Bene Köhler - 5/07/2024
+#      Giovanni Clini - 18/11/2024
 #
 
 
@@ -51,11 +51,11 @@ from utils.config import bcolors
 #       \******************************/
 
 
-class SensatUrbanDataset(PointCloudDataset):
-    """Class to handle SensatUrban dataset."""
+class WasteSegDataset(PointCloudDataset):
+    """Class to handle WasteSeg dataset."""
 
-    def __init__(self, config, set="training", use_potentials=True, load_data=True, path = "../../Data/SensatUrban"):
-        PointCloudDataset.__init__(self, "SensatUrban")
+    def __init__(self, config, set="training", use_potentials=True, load_data=True, path = "../../Data/"):
+        PointCloudDataset.__init__(self, "WasteSeg")
 
         ############
         # Parameters
@@ -93,10 +93,7 @@ class SensatUrbanDataset(PointCloudDataset):
         self.use_potentials = use_potentials
 
         # Path of the training files
-        self.train_path = "train"
-
-        # List of files to process
-        ply_path = join(self.path, self.train_path)
+        self.train_path = ""
 
         # Proportion of validation scenes
         self.cloud_names = ['bagnatica', 'chiuduno', 'desio', 'euryale', 'martinengo', 'medousa', 'offanengo', 'rogno', 'stradella', 'whitestone']
@@ -109,7 +106,7 @@ class SensatUrbanDataset(PointCloudDataset):
         elif self.set in ["validation", "test", "ERF"]:
             self.epoch_n = config.validation_size * config.batch_num
         else:
-            raise ValueError("Unknown set for Sensat Urban data: ", self.set)
+            raise ValueError("Unknown set for WasteSeg data: ", self.set)
 
         # Stop data is not needed
         if not load_data:
@@ -121,15 +118,12 @@ class SensatUrbanDataset(PointCloudDataset):
 
         # List of training files
         self.files = []
-        for i, f in enumerate(self.cloud_names):
-            if self.set == "training":
-                if self.all_splits[i] != self.validation_split:
-                    self.files += [join(ply_path, f + ".ply")]
-            elif self.set in ["validation", "test", "ERF"]:
-                if self.all_splits[i] == self.validation_split:
-                    self.files += [join(ply_path, f + ".ply")]
-            else:
-                raise ValueError("Unknown set for Sensat Urban data: ", self.set)
+        for cloud_name in self.cloud_names:
+            cloud_dir = join(self.train_path, cloud_name)
+            if exists(cloud_dir) and isdir(cloud_dir):
+                for file_name in listdir(cloud_dir):
+                    if file_name.endswith('.ply'):
+                        self.files.append(join(cloud_dir, file_name))
 
         if self.set == "training":
             self.cloud_names = [
