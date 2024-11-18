@@ -71,7 +71,7 @@ class WasteSegDataset(PointCloudDataset):
         self.init_labels()
 
         # List of classes ignored during training (can be empty)
-        self.ignored_labels = np.array([])
+        self.ignored_labels = np.array([0])
 
         # Dataset folder
         self.path = path
@@ -683,7 +683,7 @@ class WasteSegDataset(PointCloudDataset):
             t0 = time.time()
 
             # Get cloud name
-            cloud_name = self.cloud_names[i]
+            cloud_name = file_path.split('/')[8]
 
             # Name of the input files
             KDTree_file = join(tree_path, "{:s}_KDTree.pkl".format(cloud_name))
@@ -769,7 +769,7 @@ class WasteSegDataset(PointCloudDataset):
             for i, file_path in enumerate(self.files):
 
                 # Get cloud name
-                cloud_name = self.cloud_names[i]
+                cloud_name = file_path.split('/')[8]
 
                 # Name of the input files
                 coarse_KDTree_file = join(
@@ -821,7 +821,7 @@ class WasteSegDataset(PointCloudDataset):
                 t0 = time.time()
 
                 # Get info on this cloud
-                cloud_name = self.cloud_names[i]
+                cloud_name = file_path.split('/')[8]
 
                 # File name for saving
                 proj_file = join(tree_path, "{:s}_proj.pkl".format(cloud_name))
