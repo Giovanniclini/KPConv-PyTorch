@@ -719,6 +719,10 @@ class WasteSegDataset(PointCloudDataset):
                 colors = np.vstack((data["red"], data["green"], data["blue"])).T
                 labels = data["class"]
 
+                # Converti in float32
+                points = points.astype(np.float32)
+                colors = colors.astype(np.float32)
+
                 # Subsample cloud
                 sub_points, sub_colors, sub_labels = grid_subsampling(
                     points, features=colors, labels=labels, sampleDl=dl
