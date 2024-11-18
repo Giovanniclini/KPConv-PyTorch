@@ -54,7 +54,7 @@ from utils.config import bcolors
 class WasteSegDataset(PointCloudDataset):
     """Class to handle WasteSeg dataset."""
 
-    def __init__(self, config, set="training", use_potentials=True, load_data=True, path = "../../Data/"):
+    def __init__(self, config, set="training", use_potentials=True, load_data=True, path = "./Data/"):
         PointCloudDataset.__init__(self, "WasteSeg")
 
         ############
