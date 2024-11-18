@@ -122,7 +122,7 @@ class WasteSegDataset(PointCloudDataset):
             cloud_dir = join(self.train_path, cloud_name)
             if exists(cloud_dir) and isdir(cloud_dir):
                 for file_name in listdir(cloud_dir):
-                    if file_name.endswith('.ply'):
+                    if file_name.endswith('Annotated.ply'):
                         self.files.append(join(cloud_dir, file_name))
 
         if self.set == "training":

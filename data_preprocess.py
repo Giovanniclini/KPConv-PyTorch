@@ -28,33 +28,46 @@ def read_point_cloud(pc_path, ann_path):
     annotations = gpd.read_file(ann_path)
     return pcd, annotations
 
-def crop_point_cloud_and_polygons(point_cloud, annotations, grid_size):
+def crop_point_cloud_and_polygons_with_overlap(point_cloud, annotations, grid_size, overlap_fraction=0.15):
+    import numpy as np
+    import open3d as o3d
+    from shapely.geometry import box
+
     points = np.asarray(point_cloud.points)
     colors = np.asarray(point_cloud.colors)
     min_bounds = points.min(axis=0)
     max_bounds = points.max(axis=0)
 
-    x_steps = np.arange(min_bounds[0], max_bounds[0], grid_size)
-    y_steps = np.arange(min_bounds[1], max_bounds[1], grid_size)
+    # Compute step size with overlap
+    step_size = grid_size * (1 - overlap_fraction)
+
+    # Generate the steps
+    x_steps = np.arange(min_bounds[0], max_bounds[0], step_size)
+    y_steps = np.arange(min_bounds[1], max_bounds[1], step_size)
 
     sub_clouds = {}
 
     for x_min in x_steps:
         for y_min in y_steps:
+            # Define the bounds for the current grid cell
             x_max = x_min + grid_size
             y_max = y_min + grid_size
             min_bound = np.array([x_min, y_min, min_bounds[2]])
             max_bound = np.array([x_max, y_max, max_bounds[2]])
 
+            # Crop the point cloud using the bounding box
             bounding_box = o3d.geometry.AxisAlignedBoundingBox(min_bound=min_bound, max_bound=max_bound)
             cropped_cloud = point_cloud.crop(bounding_box)
 
             if np.asarray(cropped_cloud.points).shape[0] > 0:
+                # Create a bounding box for the current grid cell
                 cell_bbox = box(x_min, y_min, x_max, y_max)
 
+                # Find intersecting annotations
                 intersecting_annotations = annotations[annotations.intersects(cell_bbox)]
                 intersecting_polygons = []
-                
+
+                # Extract intersecting polygons
                 for _, row in intersecting_annotations.iterrows():
                     geojson_coordinates = [
                         [list(coord) for coord in row.geometry.exterior.coords]
@@ -68,6 +81,7 @@ def crop_point_cloud_and_polygons(point_cloud, annotations, grid_size):
                     }
                     intersecting_polygons.append(polygon_info)
 
+                # Store the cropped cloud and polygons
                 sub_clouds[(x_min, y_min)] = {
                     "point_cloud": cropped_cloud,
                     "polygons": intersecting_polygons
@@ -312,10 +326,9 @@ def generate_annotated_ply(file, output_cropped):
 
     # Combine points, colors, and labels into a single array
     labels = point_classes.reshape(-1, 1)
-    annotated_data = np.hstack((points, colors, labels))
 
     # Save the annotated point cloud as a .ply file
-    annotated_ply_dir = os.path.join(output_cropped, "AnnotatedPly")
+    annotated_ply_dir = os.path.join(output_cropped)
     os.makedirs(annotated_ply_dir, exist_ok=True)
     annotated_ply_path = os.path.join(annotated_ply_dir, file + "Annotated.ply")
 
@@ -337,9 +350,9 @@ if __name__ == '__main__':
 
     # size of the grid to use to divide point cloud. expressed in metres since coordinates
     # of pcs are metre based.
-    grid_size = 20
+    grid_size = 10
 
-    area_ratio_threshold = 0.20
+    area_ratio_threshold = 0.10
 
     for site in site_list:
 
@@ -351,7 +364,7 @@ if __name__ == '__main__':
         point_cloud, annotations = read_point_cloud(pc_path, ann_path)
 
         # 2) Crop pcs
-        sub_clouds = crop_point_cloud_and_polygons(point_cloud, annotations, grid_size)
+        sub_clouds = crop_point_cloud_and_polygons_with_overlap(point_cloud, annotations, grid_size)
 
         # 3) Filter point clouds based on area ratio
         filtered_sub_clouds = filter_point_clouds_by_area_ratio(sub_clouds, grid_size, area_ratio_threshold)
