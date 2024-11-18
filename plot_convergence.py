@@ -41,6 +41,7 @@ from datasets.ModelNet40 import ModelNet40Dataset
 from datasets.S3DIS import S3DISDataset
 from datasets.SensatUrban import SensatUrbanDataset 
 from datasets.SemanticKitti import SemanticKittiDataset
+from datasets.WasteSeg import WasteSegDataset
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -348,6 +349,8 @@ def compare_trainings(list_of_paths, list_of_labels=None):
 
 def compare_convergences_segment(dataset, list_of_paths, list_of_names=None):
 
+    import os
+
     # Parameters
     # **********
 
@@ -355,6 +358,10 @@ def compare_convergences_segment(dataset, list_of_paths, list_of_names=None):
 
     if list_of_names is None:
         list_of_names = [str(i) for i in range(len(list_of_paths))]
+
+    # Create output directory if it doesn't exist
+    output_dir = "./images"
+    os.makedirs(output_dir, exist_ok=True)
 
     # Read Logs
     # *********
@@ -416,50 +423,35 @@ def compare_convergences_segment(dataset, list_of_paths, list_of_names=None):
     # Plots
     # *****
 
-    # Figure
+    # Plot mean IoU over epochs
     fig = plt.figure('mIoUs')
     for i, name in enumerate(list_of_names):
         p = plt.plot(all_pred_epochs[i], all_mIoUs[i], '--', linewidth=1, label=name)
         plt.plot(all_snap_epochs[i], np.mean(all_snap_IoUs[i], axis=1), linewidth=1, color=p[-1].get_color())
     plt.xlabel('epochs')
     plt.ylabel('IoU')
-
-    # Set limits for y axis
-    #plt.ylim(0.55, 0.95)
-
-    # Display legends and title
     plt.legend(loc=4)
-
-    # Customize the graph
     ax = fig.gca()
     ax.grid(linestyle='-.', which='both')
-    #ax.set_yticks(np.arange(0.8, 1.02, 0.02))
+    plt.savefig(os.path.join(output_dir, 'mIoUs.png'))
+    plt.close(fig)
 
+    # Plot individual class IoUs
     displayed_classes = [0, 1, 2, 3, 4, 5, 6, 7]
-    displayed_classes = []
     for c_i, c_name in enumerate(class_list):
         if c_i in displayed_classes:
-
-            # Figure
             fig = plt.figure(c_name + ' IoU')
             for i, name in enumerate(list_of_names):
                 plt.plot(all_pred_epochs[i], all_class_IoUs[i][:, c_i], linewidth=1, label=name)
             plt.xlabel('epochs')
             plt.ylabel('IoU')
-
-            # Set limits for y axis
-            #plt.ylim(0.8, 1)
-
-            # Display legends and title
             plt.legend(loc=4)
-
-            # Customize the graph
             ax = fig.gca()
             ax.grid(linestyle='-.', which='both')
-            #ax.set_yticks(np.arange(0.8, 1.02, 0.02))
+            plt.savefig(os.path.join(output_dir, f'{c_name}_IoU.png'))
+            plt.close(fig)
 
-    # Show all
-    plt.show()
+    print(f"All plots have been saved in {output_dir}")
 
 
 def compare_convergences_classif(list_of_paths, list_of_labels=None):
@@ -782,7 +774,7 @@ if __name__ == '__main__':
     ######################################################
 
     # My logs: choose the logs to show
-    logs, logs_names = experiment_name_1()
+    logs, logs_names = ['/content/drive/MyDrive/Colab Notebooks/thesis/KPConv-PyTorch/results/Log_2024-11-18_23-05-44'], ["last_training"]
 
     ################
     # Plot functions
@@ -818,6 +810,9 @@ if __name__ == '__main__':
             compare_convergences_segment(dataset, logs, logs_names)
         if config.dataset.startswith('SensatUrban'):
             dataset = SensatUrbanDataset(config, load_data=False)
+            compare_convergences_segment(dataset, logs, logs_names)
+        if config.dataset.startswith('WasteSeg'):
+            dataset = WasteSegDataset(config, load_data=False)
             compare_convergences_segment(dataset, logs, logs_names)
     elif config.dataset_task == 'slam_segmentation':
         if config.dataset.startswith('SemanticKitti'):
