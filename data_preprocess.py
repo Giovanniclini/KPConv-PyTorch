@@ -28,7 +28,7 @@ def read_point_cloud(pc_path, ann_path):
     annotations = gpd.read_file(ann_path)
     return pcd, annotations
 
-def crop_point_cloud_and_polygons_with_overlap(point_cloud, annotations, grid_size, overlap_fraction=0.15):
+def crop_point_cloud_and_polygons_with_overlap(point_cloud, annotations, grid_size, overlap_fraction=0.35):
     import numpy as np
     import open3d as o3d
     from shapely.geometry import box
@@ -327,6 +327,11 @@ def generate_annotated_ply(file, output_cropped):
     # Combine points, colors, and labels into a single array
     labels = point_classes.reshape(-1, 1)
 
+    # Normalize coordinates for the entire point cloud
+    min_coords = points.min(axis=0)
+    max_coords = points.max(axis=0)
+    normalized_points = (points - min_coords) / (max_coords - min_coords)
+
     # Save the annotated point cloud as a .ply file
     annotated_ply_dir = os.path.join(output_cropped)
     os.makedirs(annotated_ply_dir, exist_ok=True)
@@ -334,7 +339,7 @@ def generate_annotated_ply(file, output_cropped):
 
     # Use the write_ply function to save the data
     write_ply(annotated_ply_path,
-            (points, colors, labels),
+            (normalized_points, colors, labels),
             ['x', 'y', 'z', 'red', 'green', 'blue', 'class'])
 
     print(f"Saved {annotated_ply_path}")
@@ -346,13 +351,13 @@ if __name__ == '__main__':
     parser.add_argument('out', type=str, help='Path to output folder')
     args = parser.parse_args()
 
-    site_list = ['bagnatica', 'chiuduno', 'desio', 'euryale', 'martinengo', 'medousa', 'offanengo', 'rogno', 'stradella', 'whitestone']
+    site_list = ['bagnatica', 'chiuduno', 'desio', 'euryale', 'martinengo', 'medousa', 'offanengo', 'rogno', 'stradella']
 
     # size of the grid to use to divide point cloud. expressed in metres since coordinates
     # of pcs are metre based.
-    grid_size = 10
+    grid_size = 35.0
 
-    area_ratio_threshold = 0.10
+    area_ratio_threshold = 0.1
 
     for site in site_list:
 
