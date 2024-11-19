@@ -93,10 +93,10 @@ class WasteSegDataset(PointCloudDataset):
         self.use_potentials = use_potentials
 
         # Path of the training files
-        self.train_path = ""
+        self.train_path = "/content/drive/MyDrive/Colab Notebooks/thesis/KPConv-PyTorch/Data"
 
         # Proportion of validation scenes
-        self.cloud_names = ['bagnatica', 'chiuduno', 'desio', 'euryale', 'martinengo', 'medousa', 'offanengo', 'rogno', 'stradella', 'whitestone']
+        self.cloud_names = ['bagnaticaCropped', 'chiudunoCropped', 'desioCropped', 'euryaleCropped', 'martinengoCropped', 'medousaCropped', 'offanengoCropped', 'rognoCropped', 'stradellaCropped']
         self.all_splits = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
         self.validation_split = 5
 
@@ -679,11 +679,16 @@ class WasteSegDataset(PointCloudDataset):
 
         for i, file_path in enumerate(self.files):
 
-            # Restart timer
-            t0 = time.time()
+            if file_path.split('/')[8] in self.cloud_names:
 
-            # Get cloud name
-            cloud_name = file_path.split('/')[8]
+                # Restart timer
+                t0 = time.time()
+
+                # Get cloud name
+                cloud_name = file_path.split('/')[8]
+            
+            else:
+                continue
 
             # Name of the input files
             KDTree_file = join(tree_path, "{:s}_KDTree.pkl".format(cloud_name))
@@ -772,8 +777,13 @@ class WasteSegDataset(PointCloudDataset):
 
             for i, file_path in enumerate(self.files):
 
-                # Get cloud name
-                cloud_name = file_path.split('/')[8]
+                if file_path.split('/')[8] in self.cloud_names:
+
+                    # Get cloud name
+                    cloud_name = file_path.split('/')[8]
+            
+                else:
+                    continue
 
                 # Name of the input files
                 coarse_KDTree_file = join(
@@ -821,11 +831,16 @@ class WasteSegDataset(PointCloudDataset):
             # Get validation/test reprojection indices
             for i, file_path in enumerate(self.files):
 
-                # Restart timer
-                t0 = time.time()
+                if file_path.split('/')[8] in self.cloud_names:
 
-                # Get info on this cloud
-                cloud_name = file_path.split('/')[8]
+                    # Restart timer
+                    t0 = time.time()
+
+                    # Get cloud name
+                    cloud_name = file_path.split('/')[8]
+                
+                else:
+                    continue
 
                 # File name for saving
                 proj_file = join(tree_path, "{:s}_proj.pkl".format(cloud_name))
