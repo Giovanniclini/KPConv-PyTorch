@@ -133,7 +133,7 @@ class WasteSegDataset(PointCloudDataset):
                                 if self.all_splits[i] != self.validation_split]
         elif self.set in ['validation', 'test', 'ERF']:
             self.cloud_names = [f for i, f in enumerate(self.cloud_names)
-                                if self.all_splits[i] == self.validation_split]
+                                if self.all_splits[i] in self.validation_split]
 
         if 0 < self.config.first_subsampling_dl <= 0.01:
             raise ValueError("subsampling_parameter too low (should be over 1 cm")
