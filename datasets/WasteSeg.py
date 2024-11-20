@@ -96,9 +96,9 @@ class WasteSegDataset(PointCloudDataset):
         self.train_path = "/content/drive/MyDrive/Colab Notebooks/thesis/KPConv-PyTorch/Data"
 
         # Proportion of validation scenes
-        self.cloud_names = ['bagnaticaCropped', 'chiudunoCropped', 'desioCropped', 'euryaleCropped', 'martinengoCropped', 'medousaCropped', 'offanengoCropped', 'rognoCropped', 'stradellaCropped']
-        self.all_splits = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-        self.validation_split = 5
+        self.cloud_names = [f for f in listdir(self.train_path) if f.endswith('.ply')]        
+        self.all_splits = len(self.cloud_names)
+        self.validation_split = [1,2,3,4,5]
 
         # Number of models used per epoch
         if self.set == "training":
@@ -118,25 +118,22 @@ class WasteSegDataset(PointCloudDataset):
 
         # List of training files
         self.files = []
-        for cloud_name in self.cloud_names:
-            cloud_dir = join(self.train_path, cloud_name)
-            if exists(cloud_dir) and isdir(cloud_dir):
-                for file_name in listdir(cloud_dir):
-                    if file_name.endswith('Annotated.ply'):
-                        self.files.append(join(cloud_dir, file_name))
+        for i, f in enumerate(self.cloud_names):
+            if self.set == 'training':
+                if self.all_splits[i] != self.validation_split:
+                    self.files += [join(self.train_path, f + '.ply')]
+            elif self.set in ['validation', 'test', 'ERF']:
+                if self.all_splits[i] == self.validation_split:
+                    self.files += [join(self.train_path, f + '.ply')]
+            else:
+                raise ValueError('Unknown set for S3DIS data: ', self.set)
 
-        if self.set == "training":
-            self.cloud_names = [
-                f
-                for i, f in enumerate(self.cloud_names)
-                if self.all_splits[i] != self.validation_split
-            ]
-        elif self.set in ["validation", "test", "ERF"]:
-            self.cloud_names = [
-                f
-                for i, f in enumerate(self.cloud_names)
-                if self.all_splits[i] == self.validation_split
-            ]
+        if self.set == 'training':
+            self.cloud_names = [f for i, f in enumerate(self.cloud_names)
+                                if self.all_splits[i] != self.validation_split]
+        elif self.set in ['validation', 'test', 'ERF']:
+            self.cloud_names = [f for i, f in enumerate(self.cloud_names)
+                                if self.all_splits[i] == self.validation_split]
 
         if 0 < self.config.first_subsampling_dl <= 0.01:
             raise ValueError("subsampling_parameter too low (should be over 1 cm")
