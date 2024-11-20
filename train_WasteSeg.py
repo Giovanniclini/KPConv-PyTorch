@@ -127,7 +127,7 @@ class WasteSegConfig(Config):
     in_radius = 4.0
 
     # Size of the first subsampling grid in meter (increase value to reduce memory cost)
-    first_subsampling_dl = 0.2
+    first_subsampling_dl = 0.1
 
     # Radius of convolution in "number grid cell". (2.5 is the standard value)
     conv_radius = 2.5

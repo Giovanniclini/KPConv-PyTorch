@@ -97,7 +97,7 @@ class WasteSegDataset(PointCloudDataset):
 
         # Proportion of validation scenes
         self.cloud_names = [f for f in listdir(self.train_path) if f.endswith('.ply')]        
-        self.all_splits = len(self.cloud_names)
+        self.all_splits = [f for f in range(1, len(self.cloud_names) + 1)]
         self.validation_split = [1,2,3,4,5]
 
         # Number of models used per epoch
@@ -121,10 +121,10 @@ class WasteSegDataset(PointCloudDataset):
         for i, f in enumerate(self.cloud_names):
             if self.set == 'training':
                 if self.all_splits[i] not in self.validation_split:
-                    self.files += [join(self.train_path, f + '.ply')]
+                    self.files += [join(self.train_path, f)]
             elif self.set in ['validation', 'test', 'ERF']:
                 if self.all_splits[i] in self.validation_split:
-                    self.files += [join(self.train_path, f + '.ply')]
+                    self.files += [join(self.train_path, f)]
             else:
                 raise ValueError('Unknown set for S3DIS data: ', self.set)
 
@@ -134,7 +134,7 @@ class WasteSegDataset(PointCloudDataset):
         elif self.set in ['validation', 'test', 'ERF']:
             self.cloud_names = [f for i, f in enumerate(self.cloud_names)
                                 if self.all_splits[i] in self.validation_split]
-
+                                
         if 0 < self.config.first_subsampling_dl <= 0.01:
             raise ValueError("subsampling_parameter too low (should be over 1 cm")
 
