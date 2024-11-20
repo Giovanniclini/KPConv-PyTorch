@@ -679,16 +679,11 @@ class WasteSegDataset(PointCloudDataset):
 
         for i, file_path in enumerate(self.files):
 
-            if file_path.split('/')[8] in self.cloud_names:
+            # Restart timer
+            t0 = time.time()
 
-                # Restart timer
-                t0 = time.time()
-
-                # Get cloud name
-                cloud_name = file_path.split('/')[8]
-            
-            else:
-                continue
+            # Get cloud name
+            cloud_name = self.cloud_names[i]
 
             # Name of the input files
             KDTree_file = join(tree_path, "{:s}_KDTree.pkl".format(cloud_name))
@@ -777,13 +772,8 @@ class WasteSegDataset(PointCloudDataset):
 
             for i, file_path in enumerate(self.files):
 
-                if file_path.split('/')[8] in self.cloud_names:
-
-                    # Get cloud name
-                    cloud_name = file_path.split('/')[8]
-            
-                else:
-                    continue
+                # Get cloud name
+                cloud_name = self.cloud_names[i]
 
                 # Name of the input files
                 coarse_KDTree_file = join(
@@ -831,16 +821,11 @@ class WasteSegDataset(PointCloudDataset):
             # Get validation/test reprojection indices
             for i, file_path in enumerate(self.files):
 
-                if file_path.split('/')[8] in self.cloud_names:
+                # Restart timer
+                t0 = time.time()
 
-                    # Restart timer
-                    t0 = time.time()
-
-                    # Get cloud name
-                    cloud_name = file_path.split('/')[8]
-                
-                else:
-                    continue
+                # Get cloud name
+                cloud_name = self.cloud_names[i]
 
                 # File name for saving
                 proj_file = join(tree_path, "{:s}_proj.pkl".format(cloud_name))
