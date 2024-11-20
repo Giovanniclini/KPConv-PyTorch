@@ -327,10 +327,10 @@ def generate_annotated_ply(file, output_cropped):
     # Combine points, colors, and labels into a single array
     labels = point_classes.reshape(-1, 1)
 
-    # Normalize coordinates for the entire point cloud
-    min_coords = points.min(axis=0)
-    max_coords = points.max(axis=0)
-    normalized_points = (points - min_coords) / (max_coords - min_coords)
+    # Calcola il centro della point cloud
+    center = points.mean(axis=0)
+    # Trasla i punti in modo che il centro sia all'origine
+    normalized_points = points - center
 
     # Save the annotated point cloud as a .ply file
     annotated_ply_dir = os.path.join(output_cropped)
