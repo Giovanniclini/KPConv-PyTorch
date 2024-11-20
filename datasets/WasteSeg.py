@@ -120,10 +120,10 @@ class WasteSegDataset(PointCloudDataset):
         self.files = []
         for i, f in enumerate(self.cloud_names):
             if self.set == 'training':
-                if self.all_splits[i] != self.validation_split:
+                if self.all_splits[i] not in self.validation_split:
                     self.files += [join(self.train_path, f + '.ply')]
             elif self.set in ['validation', 'test', 'ERF']:
-                if self.all_splits[i] == self.validation_split:
+                if self.all_splits[i] in self.validation_split:
                     self.files += [join(self.train_path, f + '.ply')]
             else:
                 raise ValueError('Unknown set for S3DIS data: ', self.set)
