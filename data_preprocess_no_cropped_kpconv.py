@@ -179,11 +179,11 @@ def normalize_pc(points):
     points -= centroid
 
     # Compute the furthest distance
-    furthest_distance = np.max(np.sqrt(np.sum(abs(points) ** 2, axis=-1)))
+    #furthest_distance = np.max(np.sqrt(np.sum(abs(points) ** 2, axis=-1)))
 
     # Scale the points to fit within a unit sphere
-    if furthest_distance > 0:
-        points /= furthest_distance
+    #if furthest_distance > 0:
+    #    points /= furthest_distance
 
     return points
 
