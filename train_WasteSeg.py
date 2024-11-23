@@ -127,7 +127,7 @@ class WasteSegConfig(Config):
     in_radius = 4.0
 
     # Size of the first subsampling grid in meter (increase value to reduce memory cost)
-    first_subsampling_dl = 0.1
+    first_subsampling_dl = 0.2
 
     # Radius of convolution in "number grid cell". (2.5 is the standard value)
     conv_radius = 2.5
@@ -201,7 +201,10 @@ class WasteSegConfig(Config):
     #   > 'none': Each point in the whole batch has the same contribution.
     #   > 'class': Each class has the same contribution (points are weighted according to class balance)
     #   > 'batch': Each cloud in the batch has the same contribution (points are weighted according cloud sizes)
-    segloss_balance = "none"
+    segloss_balance = "class"
+    proportions = [0.9701,
+                   0.0299]
+    class_w = np.sqrt([1.0 / p for p in proportions])
 
     # Do we nee to save convergence
     saving = True
@@ -234,7 +237,7 @@ if __name__ == "__main__":
 
     # Choose here if you want to start training from a previous snapshot (None for new training)
     # previous_training_path = 'Log_2024-06-21_09-09-55'
-    previous_training_path = None
+    previous_training_path = 'Log_2024-11-21_01-14-00'
 
     # Choose index of checkpoint to start from. If None, uses the latest chkp
     chkp_idx = None
@@ -252,6 +255,8 @@ if __name__ == "__main__":
         chosen_chkp = os.path.join(
             "results", previous_training_path, "checkpoints", chosen_chkp
         )
+
+        print("Chosen checkpoint is %s" % chosen_chkp)
 
     else:
         chosen_chkp = None

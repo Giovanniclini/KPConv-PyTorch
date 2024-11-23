@@ -54,7 +54,7 @@ from utils.config import bcolors
 class WasteSegDataset(PointCloudDataset):
     """Class to handle WasteSeg dataset."""
 
-    def __init__(self, config, set="training", use_potentials=True, load_data=True, path = "./Data/"):
+    def __init__(self, config, set="training", use_potentials=True, load_data=True, path = "../Data/"):
         PointCloudDataset.__init__(self, "WasteSeg")
 
         ############
@@ -71,7 +71,7 @@ class WasteSegDataset(PointCloudDataset):
         self.init_labels()
 
         # List of classes ignored during training (can be empty)
-        self.ignored_labels = np.array([0])
+        self.ignored_labels = np.array([])
 
         # Dataset folder
         self.path = path
@@ -93,12 +93,21 @@ class WasteSegDataset(PointCloudDataset):
         self.use_potentials = use_potentials
 
         # Path of the training files
-        self.train_path = "/content/drive/MyDrive/Colab Notebooks/thesis/KPConv-PyTorch/Data"
+        self.train_path = "train"
+
+        # List of files to process
+        ply_path = join(self.path, self.train_path)
 
         # Proportion of validation scenes
-        self.cloud_names = [f for f in listdir(self.train_path) if f.endswith('.ply')]        
-        self.all_splits = [f for f in range(1, len(self.cloud_names) + 1)]
-        self.validation_split = [1,2,3,4,5]
+        # ROGNO is the test scene
+        self.cloud_names = ["bagnatica", "chiuduno", "desio", "euryale", "martinengo", "medousa", "offanengo", 
+                            #"rogno", 
+                            "stradella"]
+
+        # 37 cloud files
+        self.all_splits = [0,0,0,0,0,1,0,0,0]
+        
+        self.validation_split = 1
 
         # Number of models used per epoch
         if self.set == "training":
@@ -119,21 +128,27 @@ class WasteSegDataset(PointCloudDataset):
         # List of training files
         self.files = []
         for i, f in enumerate(self.cloud_names):
-            if self.set == 'training':
-                if self.all_splits[i] not in self.validation_split:
-                    self.files += [join(self.train_path, f)]
-            elif self.set in ['validation', 'test', 'ERF']:
-                if self.all_splits[i] in self.validation_split:
-                    self.files += [join(self.train_path, f)]
+            if self.set == "training":
+                if self.all_splits[i] != self.validation_split:
+                    self.files += [join(ply_path, f + ".ply")]
+            elif self.set in ["validation", "test", "ERF"]:
+                if self.all_splits[i] == self.validation_split:
+                    self.files += [join(ply_path, f + ".ply")]
             else:
                 raise ValueError('Unknown set for S3DIS data: ', self.set)
 
-        if self.set == 'training':
-            self.cloud_names = [f for i, f in enumerate(self.cloud_names)
-                                if self.all_splits[i] not in self.validation_split]
-        elif self.set in ['validation', 'test', 'ERF']:
-            self.cloud_names = [f for i, f in enumerate(self.cloud_names)
-                                if self.all_splits[i] in self.validation_split]
+        if self.set == "training":
+            self.cloud_names = [
+                f
+                for i, f in enumerate(self.cloud_names)
+                if self.all_splits[i] != self.validation_split
+            ]
+        elif self.set in ["validation", "test", "ERF"]:
+            self.cloud_names = [
+                f
+                for i, f in enumerate(self.cloud_names)
+                if self.all_splits[i] == self.validation_split
+            ]
                                 
         if 0 < self.config.first_subsampling_dl <= 0.01:
             raise ValueError("subsampling_parameter too low (should be over 1 cm")
