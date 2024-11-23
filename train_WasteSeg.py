@@ -321,6 +321,12 @@ if __name__ == "__main__":
     t1 = time.time()
     net = KPFCNN(config, training_dataset.label_values, training_dataset.ignored_labels)
 
+    # Freeze encoder layers
+    # FINETUNING
+    for name, param in net.named_parameters():
+        if "encoder" in name:
+            param.requires_grad = False
+
     debug = True
     if debug:
         print("\n*************************************\n")
