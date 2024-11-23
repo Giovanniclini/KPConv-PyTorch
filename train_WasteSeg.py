@@ -168,7 +168,7 @@ class WasteSegConfig(Config):
     #####################
 
     # Maximal number of epochs
-    max_epoch = 500
+    max_epoch = 250
 
     # Learning rate management
     learning_rate = 1e-2
@@ -271,9 +271,9 @@ if __name__ == "__main__":
 
     # Initialize configuration class
     config = WasteSegConfig()
-    if previous_training_path:
-        config.load(os.path.join("results", previous_training_path))
-        config.saving_path = None
+    #if previous_training_path:
+    #    config.load(os.path.join("results", previous_training_path))
+    #    config.saving_path = None
 
     # Get path from argument if given
     if len(sys.argv) > 1:
@@ -322,8 +322,9 @@ if __name__ == "__main__":
     net = KPFCNN(config, training_dataset.label_values, training_dataset.ignored_labels)
 
     # Freeze encoder layers
-    # FINETUNING
+    # TRANSFERLEARNING
     for name, param in net.named_parameters():
+        print(name, "freezing")
         if "encoder" in name:
             param.requires_grad = False
 
@@ -343,7 +344,7 @@ if __name__ == "__main__":
         print("\n*************************************\n")
 
     # Define a trainer class
-    trainer = ModelTrainer(net, config, chkp_path=chosen_chkp)
+    trainer = ModelTrainer(net, config, chkp_path=chosen_chkp, transferlearning = True)
     print("Done in {:.1f}s\n".format(time.time() - t1))
 
     print("\nStart training")

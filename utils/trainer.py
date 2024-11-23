@@ -41,7 +41,7 @@ from utils.metrics import IoU_from_confusions, fast_confusion
 from utils.config import Config
 from sklearn.neighbors import KDTree
 
-from models.blocks import KPConv
+from models.blocks import KPConv, UnaryBlock
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -56,13 +56,13 @@ class ModelTrainer:
     # Initialization methods
     # ------------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, net, config, chkp_path=None, finetune=False, on_gpu=True):
+    def __init__(self, net, config, chkp_path=None, on_gpu=True, transferlearning = False):
         """
         Initialize training parameters and reload previous model for restore/finetune
         :param net: network object
         :param config: configuration object
         :param chkp_path: path to the checkpoint that needs to be loaded (None for new training)
-        :param finetune: finetune from checkpoint (True) or restore training from checkpoint (False)
+        :param transferlearning: transferlearning from checkpoint (True) or restore training from checkpoint (False)
         :param on_gpu: Train on GPU or CPU
         """
 
@@ -96,11 +96,22 @@ class ModelTrainer:
         ##########################
 
         if (chkp_path is not None):
-            if finetune:
-                checkpoint = torch.load(chkp_path)
-                net.load_state_dict(checkpoint['model_state_dict'])
+            if transferlearning:
+                checkpoint = torch.load(chkp_path, map_location=self.device)
+                state_dict = checkpoint['model_state_dict']
+
+                # Filter out the parameters that don't match the current model
+                filtered_state_dict = {k: v for k, v in state_dict.items() if k in net.state_dict() and net.state_dict()[k].shape == v.shape}
+
+                # Load the filtered state dictionary
+                net.load_state_dict(filtered_state_dict, strict=False)
+
+                # Reinitialize the segmentation head to match the current number of classes
+                net.head_softmax = UnaryBlock(128, config.num_classes, False, 0, no_relu=False).to(self.device)
+                net.criterion = torch.nn.CrossEntropyLoss().to(self.device)
+
                 net.train()
-                print("Model restored and ready for finetuning.")
+                print("Model restored and ready for transfer learning.")
             else:
                 checkpoint = torch.load(chkp_path)
                 net.load_state_dict(checkpoint['model_state_dict'])
