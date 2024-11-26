@@ -355,9 +355,9 @@ if __name__ == '__main__':
 
     # size of the grid to use to divide point cloud. expressed in metres since coordinates
     # of pcs are metre based.
-    grid_size = 35.0
+    grid_size = 15.0
 
-    area_ratio_threshold = 0.1
+    area_ratio_threshold = 0.25
 
     for site in site_list:
 
