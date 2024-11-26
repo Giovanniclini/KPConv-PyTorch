@@ -219,12 +219,16 @@ def compare_trainings(list_of_paths, list_of_labels=None):
     # Parameters
     # **********
 
-    plot_lr = False
+    plot_lr = True
     smooth_epochs = 0.5
     stride = 2
 
     if list_of_labels is None:
         list_of_labels = [str(i) for i in range(len(list_of_paths))]
+
+    # Create output directory if it doesn't exist
+    output_dir = "./images"
+    os.makedirs(output_dir, exist_ok=True)
 
     # Read Training Logs
     # ******************
@@ -280,7 +284,6 @@ def compare_trainings(list_of_paths, list_of_labels=None):
     # Plots learning rate
     # *******************
 
-
     if plot_lr:
         # Figure
         fig = plt.figure('lr')
@@ -299,6 +302,10 @@ def compare_trainings(list_of_paths, list_of_labels=None):
         ax = fig.gca()
         ax.grid(linestyle='-.', which='both')
         # ax.set_yticks(np.arange(0.8, 1.02, 0.02))
+
+        # Save figure
+        plt.savefig(os.path.join(output_dir, 'learning_rate.png'))
+        plt.close(fig)
 
     # Plots loss
     # **********
@@ -322,6 +329,10 @@ def compare_trainings(list_of_paths, list_of_labels=None):
     ax.grid(linestyle='-.', which='both')
     # ax.set_yticks(np.arange(0.8, 1.02, 0.02))
 
+    # Save figure
+    plt.savefig(os.path.join(output_dir, 'loss.png'))
+    plt.close(fig)
+
     # Plot Times
     # **********
 
@@ -343,8 +354,11 @@ def compare_trainings(list_of_paths, list_of_labels=None):
     ax.grid(linestyle='-.', which='both')
     # ax.set_yticks(np.arange(0.8, 1.02, 0.02))
 
-    # Show all
-    plt.show()
+    # Save figure
+    plt.savefig(os.path.join(output_dir, 'time.png'))
+    plt.close(fig)
+
+    print(f"All plots have been saved in {output_dir}")
 
 
 def compare_convergences_segment(dataset, list_of_paths, list_of_names=None):
@@ -774,7 +788,7 @@ if __name__ == '__main__':
     ######################################################
 
     # My logs: choose the logs to show
-    logs, logs_names = ['/content/drive/MyDrive/Colab Notebooks/thesis/KPConv-PyTorch/results/Log_2024-11-18_23-05-44'], ["last_training"]
+    logs, logs_names = ['/content/drive/MyDrive/Colab Notebooks/thesis/KPConv-PyTorch-waste-seg/results/Log_2024-11-24_19-53-53'], ["last_training"]
 
     ################
     # Plot functions
