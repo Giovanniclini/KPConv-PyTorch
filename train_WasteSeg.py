@@ -202,13 +202,15 @@ class WasteSegConfig(Config):
     #   > 'class': Each class has the same contribution (points are weighted according to class balance)
     #   > 'batch': Each cloud in the batch has the same contribution (points are weighted according cloud sizes)
     segloss_balance = "class"
-    proportions = [0.9701,
-                   0.0299]
+    proportions = [0.999,
+                   0.001]
     class_w = np.sqrt([1.0 / p for p in proportions])
 
     # Do we nee to save convergence
     saving = True
     saving_path = None
+
+    transferlearning = True
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -323,10 +325,11 @@ if __name__ == "__main__":
 
     # Freeze encoder layers
     # TRANSFERLEARNING
-    for name, param in net.named_parameters():
-        print(name, "freezing")
-        if "encoder" in name:
-            param.requires_grad = False
+    if config.transferlearning:
+        for name, param in net.named_parameters():
+            if "encoder" in name:
+                print(name, "freezing")
+                param.requires_grad = False
 
     debug = True
     if debug:
@@ -344,7 +347,7 @@ if __name__ == "__main__":
         print("\n*************************************\n")
 
     # Define a trainer class
-    trainer = ModelTrainer(net, config, chkp_path=chosen_chkp, transferlearning = True)
+    trainer = ModelTrainer(net, config, chkp_path=chosen_chkp, transferlearning = config.transferlearning)
     print("Done in {:.1f}s\n".format(time.time() - t1))
 
     print("\nStart training")

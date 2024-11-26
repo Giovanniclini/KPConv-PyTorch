@@ -100,12 +100,26 @@ class WasteSegDataset(PointCloudDataset):
 
         # Proportion of validation scenes
         # ROGNO is the test scene
-        self.cloud_names = ["bagnatica", "chiuduno", "desio", "euryale", "martinengo", "medousa", "offanengo", 
-                            #"rogno", 
-                            "stradella"]
+        self.cloud_names = ["bagnatica1", "bagnatica2", "bagnatica3", 
+                            "chiuduno1", "chiuduno2", 
+                            "desio1", "desio2", "desio3", "desio4", "desio5",
+                            "euryale1", "euryale2", "euryale3", "euryale4", "euryale5",
+                            "martinengo1", "martinengo2",
+                            "medousa", 
+                            "offanengo1", "offanengo2", "offanengo3",
+                            "rogno1", "rogno2", "rogno3", "rogno4",
+                            "stradella1"]
 
         # 37 cloud files
-        self.all_splits = [0,0,0,0,0,1,0,0,0]
+        self.all_splits = [1,0,0,
+                          0,0,
+                          1,0,0,0,0,
+                          0,0,0,0,0,
+                          0,0,
+                          0,
+                          0,0,0,
+                          1, 0, 0, 0,
+                          0]
         
         self.validation_split = 1
 

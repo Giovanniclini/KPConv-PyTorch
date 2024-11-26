@@ -97,6 +97,7 @@ class ModelTrainer:
 
         if (chkp_path is not None):
             if transferlearning:
+
                 checkpoint = torch.load(chkp_path, map_location=self.device)
                 state_dict = checkpoint['model_state_dict']
 
@@ -108,7 +109,10 @@ class ModelTrainer:
 
                 # Reinitialize the segmentation head to match the current number of classes
                 net.head_softmax = UnaryBlock(128, config.num_classes, False, 0, no_relu=False).to(self.device)
-                net.criterion = torch.nn.CrossEntropyLoss().to(self.device)
+
+                print(config.class_w[0], config.class_w[1], "class weigths")
+                class_weights = torch.tensor([config.class_w[0], config.class_w[1]], dtype=torch.float).to(self.device)
+                net.criterion = torch.nn.CrossEntropyLoss(weight=class_weights)
 
                 net.train()
                 print("Model restored and ready for transfer learning.")
