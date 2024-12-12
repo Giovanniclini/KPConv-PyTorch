@@ -28,7 +28,7 @@ def read_point_cloud(pc_path, ann_path):
     annotations = gpd.read_file(ann_path)
     return pcd, annotations
 
-def crop_point_cloud_and_polygons_with_overlap(point_cloud, annotations, grid_size, overlap_fraction=0.35):
+def crop_point_cloud_and_polygons_with_overlap(point_cloud, annotations, grid_size, overlap_fraction=0.3):
     import numpy as np
     import open3d as o3d
     from shapely.geometry import box
@@ -89,7 +89,7 @@ def crop_point_cloud_and_polygons_with_overlap(point_cloud, annotations, grid_si
 
     return sub_clouds
 
-def filter_point_clouds_by_area_ratio(sub_clouds, grid_size, area_ratio_threshold=0.1):
+def filter_point_clouds_by_area_ratio(sub_clouds, grid_size, area_ratio_threshold=0.02):
     filtered_sub_clouds = {}
     bounding_box_area = grid_size ** 2
 
@@ -275,14 +275,16 @@ def header_properties(field_list, field_names):
     return lines
 
 
-def annotations_handling(output_cropped):
+def annotations_handling(output_cropped, site):
 
+    index_cropped_site = 0
     for file in os.listdir(output_cropped):
         if file.endswith(".ply"):
+            index_cropped_site += 1
             base_file = file.rsplit(".ply", 1)[0]
-            generate_annotated_ply(base_file, output_cropped)
+            generate_annotated_ply(base_file, output_cropped, site, index_cropped_site)
 
-def generate_annotated_ply(file, output_cropped):
+def generate_annotated_ply(file, output_cropped, site, index_cropped_site):
 
     base_path = os.path.join(output_cropped, file)
 
@@ -333,9 +335,9 @@ def generate_annotated_ply(file, output_cropped):
     normalized_points = points - center
 
     # Save the annotated point cloud as a .ply file
-    annotated_ply_dir = os.path.join(output_cropped)
+    annotated_ply_dir = os.path.join(output_cropped, "Annotated")
     os.makedirs(annotated_ply_dir, exist_ok=True)
-    annotated_ply_path = os.path.join(annotated_ply_dir, file + "Annotated.ply")
+    annotated_ply_path = os.path.join(annotated_ply_dir, site + str(index_cropped_site))
 
     # Use the write_ply function to save the data
     write_ply(annotated_ply_path,
@@ -355,9 +357,9 @@ if __name__ == '__main__':
 
     # size of the grid to use to divide point cloud. expressed in metres since coordinates
     # of pcs are metre based.
-    grid_size = 15.0
+    grid_size = 40.0
 
-    area_ratio_threshold = 0.25
+    area_ratio_threshold = 0.01
 
     for site in site_list:
 
@@ -379,4 +381,4 @@ if __name__ == '__main__':
         save_filtered_sub_clouds(filtered_sub_clouds, output_path)
 
         # 5) Generate labels
-        annotations_handling(output_path)
+        annotations_handling(output_path, site)
