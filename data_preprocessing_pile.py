@@ -133,7 +133,7 @@ def process_annotations(annotation_folder, pointcloud_folder, output_folder):
 
             # Write to PLY
             output_ply = os.path.join(output_folder, f"{base_name}_polygon_{i}.ply")
-            write_ply(output_ply, [cropped_points, cropped_labels], ['x', 'y', 'z', 'category'])
+            write_ply(output_ply, [cropped_points, cropped_labels], ['x', 'y', 'z', 'class'])
 
             print(f"Saved: {output_ply}")
 
