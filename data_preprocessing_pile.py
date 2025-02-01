@@ -77,7 +77,6 @@ def write_ply(filename, field_list, field_names, triangular_faces=None):
 
     return True
 
-# Process each annotation file
 def process_annotations(annotation_folder, pointcloud_folder, output_folder):
     os.makedirs(output_folder, exist_ok=True)
 
@@ -109,6 +108,7 @@ def process_annotations(annotation_folder, pointcloud_folder, output_folder):
 
         # Extract point data
         points = np.vstack((las_data.x, las_data.y, las_data.z)).T
+        colors = np.vstack((las_data.red, las_data.green, las_data.blue)).T.astype(np.uint8)  # Ensure correct dtype
         num_points = points.shape[0]
 
         # Process each polygon separately
@@ -125,15 +125,17 @@ def process_annotations(annotation_folder, pointcloud_folder, output_folder):
                                 (points[:, 1] >= min_y) & (points[:, 1] <= max_y)
 
             cropped_points = points[bounding_box_mask]
+            cropped_colors = colors[bounding_box_mask]
             cropped_labels = point_labels[bounding_box_mask]
 
             # Skip if there are no points inside
             if cropped_points.shape[0] == 0:
                 continue
 
-            # Write to PLY
+            # Write to PLY with RGB
             output_ply = os.path.join(output_folder, f"{base_name}_polygon_{i}.ply")
-            write_ply(output_ply, [cropped_points, cropped_labels], ['x', 'y', 'z', 'class'])
+            write_ply(output_ply, (cropped_points, cropped_colors, cropped_labels), 
+                      ['x', 'y', 'z', 'red', 'green', 'blue', 'class'])
 
             print(f"Saved: {output_ply}")
 
