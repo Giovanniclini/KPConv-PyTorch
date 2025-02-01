@@ -111,33 +111,42 @@ def process_annotations(annotation_folder, pointcloud_folder, output_folder):
         colors = np.vstack((las_data.red, las_data.green, las_data.blue)).T.astype(np.uint8)  # Ensure correct dtype
         num_points = points.shape[0]
 
-        # Process each polygon separately
-        for i, (polygon, category_id) in enumerate(polygons):
+        # Initialize category labels with background
+        point_labels = np.full(num_points, 6, dtype=np.int32)  
+
+        # Assign categories based on all polygons (ensuring overlapping polygons don't override valid labels)
+        for polygon, category_id in polygons:
             inside = np.array([polygon.contains(Point(x, y)) for x, y, _ in points])
-            point_labels = np.full(num_points, 6, dtype=np.int32)  # Default to background
-            point_labels[inside] = category_id  # Assign waste category inside polygon
+            # Only update if the point is inside the polygon and not previously assigned a category
+            point_labels[inside] = category_id  
 
-            # Extract only points within the bounding box of this polygon
-            min_x, min_y = np.min(np.array(polygon.exterior.coords)[:, :2], axis=0)
-            max_x, max_y = np.max(np.array(polygon.exterior.coords)[:, :2], axis=0)
+        # Extract bounding box for all polygons
+        all_x, all_y = [], []
+        for polygon, _ in polygons:
+            x_coords, y_coords = np.array(polygon.exterior.coords)[:, 0], np.array(polygon.exterior.coords)[:, 1]
+            all_x.extend(x_coords)
+            all_y.extend(y_coords)
 
-            bounding_box_mask = (points[:, 0] >= min_x) & (points[:, 0] <= max_x) & \
-                                (points[:, 1] >= min_y) & (points[:, 1] <= max_y)
+        min_x, min_y, _ = np.min(points, axis=0)
+        max_x, max_y, _ = np.max(points, axis=0)
 
-            cropped_points = points[bounding_box_mask]
-            cropped_colors = colors[bounding_box_mask]
-            cropped_labels = point_labels[bounding_box_mask]
+        bounding_box_mask = (points[:, 0] >= min_x) & (points[:, 0] <= max_x) & \
+                            (points[:, 1] >= min_y) & (points[:, 1] <= max_y)
 
-            # Skip if there are no points inside
-            if cropped_points.shape[0] == 0:
-                continue
+        cropped_points = points[bounding_box_mask]
+        cropped_colors = colors[bounding_box_mask]
+        cropped_labels = point_labels[bounding_box_mask]
 
-            # Write to PLY with RGB
-            output_ply = os.path.join(output_folder, f"{base_name}_polygon_{i}.ply")
-            write_ply(output_ply, (cropped_points, cropped_colors, cropped_labels), 
-                      ['x', 'y', 'z', 'red', 'green', 'blue', 'class'])
+        # Skip if there are no points inside
+        if cropped_points.shape[0] == 0:
+            continue
 
-            print(f"Saved: {output_ply}")
+        # Write to PLY with RGB
+        output_ply = os.path.join(output_folder, f"{base_name}.ply")
+        write_ply(output_ply, (cropped_points, cropped_colors, cropped_labels), 
+                  ['x', 'y', 'z', 'red', 'green', 'blue', 'class'])
+
+        print(f"Saved: {output_ply}")
 
 # Set folder paths
 annotation_folder = "/root/filtered_annotations"
